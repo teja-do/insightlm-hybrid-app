@@ -1,0 +1,539 @@
+{
+  "name": "InsightsLM - Generate Notebook Details",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0c488f50-8d6a-48a0-b056-5f7cfca9efe2",
+        "authentication": "headerAuth",
+        "options": {
+          "responseCode": {
+            "values": {
+              "responseCode": "customCode",
+              "customCode": 202
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        432
+      ],
+      "id": "ab055d24-b0ed-4b76-8e44-3dc58da52b07",
+      "name": "Webhook",
+      "webhookId": "0c488f50-8d6a-48a0-b056-5f7cfca9efe2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.extracted_text.substring(0,1500) }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Based on the data provided, output the following ...\n\n1. An appropriate title, \n2. A 1 paragraph summary\n3. 5 example questions that could be asked of this document. \n\nFor example \"How are the rules and regulations of tennis enforced?\" - Maximum 10 words each\n\n4. One appropriate UTF-8 emoji\n\nOnly return the ONE emoji itself. No words. No punctuation.\n\nExample output:\n🏆\n📓\n😊\n❤️\n\nOnly output in JSON."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1344,
+        432
+      ],
+      "id": "8a82d70a-8fff-4be6-92cf-e59fa34dca47",
+      "name": "Generate Title & Description"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"title\": \"<ADD>\",\n\t\"summary\": \"<ADD>\",\n  \"example_questions\": [\"ADD\",\"ADD\"],\n  \"emoji\": \"<ADD>\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        608
+      ],
+      "id": "a1c5b061-0dbf-464b-aad9-a3b53ec991f9",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "d5jtwJY7RRoMcRk4",
+          "mode": "list",
+          "cachedResultName": "InsightsLM - Extract Text"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "filePath": "={{ $json.body.filePath }}"
+          },
+          "matchingColumns": [
+            "filePath"
+          ],
+          "schema": [
+            {
+              "id": "filePath",
+              "displayName": "filePath",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        624
+      ],
+      "id": "82ebda2d-567b-4f7a-8f99-885c6895d81c",
+      "name": "Extract Text"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a25d08b6-2c99-4e08-af5f-62b13e6c4fdb",
+              "leftValue": "={{ $json.body.sourceType }}",
+              "rightValue": "=text",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "3b5d5dce-76c4-445a-bab7-53c2114d52be",
+              "leftValue": "={{ $json.body.sourceType }}",
+              "rightValue": "website",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        432
+      ],
+      "id": "f8b01138-a3f8-46d6-8604-905c58dd9957",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ea61516d-9144-4b4b-904e-cf280d5bd08d",
+              "leftValue": "={{ $json.body.sourceType }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        320
+      ],
+      "id": "2e0b0094-211f-464e-9f74-a76a62671660",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c5924d7e-6185-49a5-b61c-d244a40bd9b2",
+              "name": "=extracted_text",
+              "value": "={{ $json.body.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        224
+      ],
+      "id": "3313557e-deb5-4dd9-93a8-8457230f9774",
+      "name": "Set Text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c5924d7e-6185-49a5-b61c-d244a40bd9b2",
+              "name": "=extracted_text",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        432
+      ],
+      "id": "1a6316a8-a80d-442a-82c5-f98dff4352d3",
+      "name": "Set Text1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.filePath }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        432
+      ],
+      "id": "0f96a519-fa3b-48d9-9780-be930025e2f7",
+      "name": "Fetch Webpage"
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        864,
+        432
+      ],
+      "id": "34ea78df-826f-4846-afba-0b0dc98876fe",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "jsCode": "const options = [\n  'slate', 'gray', 'zinc', 'neutral', 'stone',\n  'red', 'orange', 'amber', 'yellow', 'lime',\n  'green', 'emerald', 'teal', 'cyan', 'sky',\n  'blue', 'indigo', 'violet', 'purple', 'fuchsia',\n  'pink', 'rose'\n];\n\nfor (const item of $input.all()) {\n  const randomOption = options[Math.floor(Math.random() * options.length)];\n  item.json.color = randomOption;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        432
+      ],
+      "id": "4f1eafae-6ce3-455f-865f-f16f21b005d6",
+      "name": "Random Color"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "notebooks",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.notebookId }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $json.output.title }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.output.summary }}"
+            },
+            {
+              "fieldId": "color",
+              "fieldValue": "={{ $json.color }}"
+            },
+            {
+              "fieldId": "generation_status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "example_questions",
+              "fieldValue": "={{ $json.output.example_questions }}"
+            },
+            {
+              "fieldId": "icon",
+              "fieldValue": "={{ $json.output.emoji.slice(0,2) }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1984,
+        432
+      ],
+      "id": "8d7abdec-1b28-443c-8697-59c97f9cccd5",
+      "name": "Update a row"
+    },
+    {
+      "parameters": {
+        "content": "[![The AI Automators](https://www.theaiautomators.com/wp-content/uploads/2025/03/gray-logo.png)](https://www.theaiautomators.com/)\n## InsightsLM Local - Generate Notebook Details\nhttps://github.com/theaiautomators/insights-lm-public\nhttps://github.com/theaiautomators/insights-lm-local-package",
+        "height": 340,
+        "width": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "225fbe77-7e82-453b-a808-42e744705ccf",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        688
+      ],
+      "id": "741c1e16-b225-483d-90e5-c5d7f08f4b07",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "Z76MD3vmxn3tUpIq",
+          "name": "Azure Open AI - GPT4.1"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Title & Description": {
+      "main": [
+        [
+          {
+            "node": "Random Color",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Title & Description",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text": {
+      "main": [
+        [
+          {
+            "node": "Generate Title & Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Set Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Webpage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Text": {
+      "main": [
+        [
+          {
+            "node": "Generate Title & Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Text1": {
+      "main": [
+        [
+          {
+            "node": "Generate Title & Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Webpage": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Set Text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Random Color": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Title & Description",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f175b0bf-5e9d-4d35-a486-0b7d16fa1285",
+  "meta": {
+    "instanceId": "068244dba05d25bac8988bd5cd582b7345afa2d5e4b550e651dcf42fe5c09e99"
+  },
+  "id": "Bqv1dhMJIbDIA8UA",
+  "tags": [
+    {
+      "createdAt": "2025-10-21T18:58:06.070Z",
+      "updatedAt": "2025-10-21T18:58:06.070Z",
+      "id": "wAqoYDTuctUrtozN",
+      "name": "TheAIAutomators.com"
+    }
+  ]
+}
