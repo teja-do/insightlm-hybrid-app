@@ -1,0 +1,12 @@
+services:
+  insightslm:
+    build:
+      context: ./insights-lm-local-package
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${API_EXTERNAL_URL}
+        VITE_SUPABASE_ANON_KEY: ${ANON_KEY}
+    container_name: insightslm
+    ports:
+      - 3010:80
+    restart: unless-stopped
