@@ -10,6 +10,7 @@ import { useDocumentProcessing } from '@/hooks/useDocumentProcessing';
 import { useNotebookGeneration } from '@/hooks/useNotebookGeneration';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import Logo from '@/components/ui/Logo';
 
 interface AddSourcesDialogProps {
   open: boolean;
@@ -75,21 +76,45 @@ const AddSourcesDialog = ({
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const files = Array.from(e.dataTransfer.files);
-      handleFileUpload(files);
+      const pdfFiles = files.filter(file => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'));
+      
+      if (pdfFiles.length !== files.length) {
+        toast({
+          title: "Invalid File Type",
+          description: "Only PDF files are allowed. Some files were ignored.",
+          variant: "destructive"
+        });
+      }
+      
+      if (pdfFiles.length > 0) {
+        handleFileUpload(pdfFiles);
+      }
     }
-  }, []);
+  }, [toast]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const files = Array.from(e.target.files);
-      handleFileUpload(files);
+      const pdfFiles = files.filter(file => file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'));
+      
+      if (pdfFiles.length !== files.length) {
+        toast({
+          title: "Invalid File Type",
+          description: "Only PDF files are allowed. Some files were ignored.",
+          variant: "destructive"
+        });
+      }
+      
+      if (pdfFiles.length > 0) {
+        handleFileUpload(pdfFiles);
+      }
     }
-  }, []);
+  }, [toast]);
 
   const processFileAsync = async (file: File, sourceId: string, notebookId: string) => {
     try {
       console.log('Starting file processing for:', file.name, 'source:', sourceId);
-      const fileType = file.type.includes('pdf') ? 'pdf' : file.type.includes('audio') ? 'audio' : 'text';
+      const fileType = 'pdf';
 
       // Update status to uploading
       updateSource({
@@ -170,7 +195,7 @@ const AddSourcesDialog = ({
     try {
       // Step 1: Create the first source immediately (this will trigger generation if it's the first source)
       const firstFile = files[0];
-      const firstFileType = firstFile.type.includes('pdf') ? 'pdf' : firstFile.type.includes('audio') ? 'audio' : 'text';
+      const firstFileType = 'pdf';
       const firstSourceData = {
         notebookId,
         title: firstFile.name,
@@ -195,7 +220,7 @@ const AddSourcesDialog = ({
         
         // Create remaining sources
         remainingSources = await Promise.all(files.slice(1).map(async (file, index) => {
-          const fileType = file.type.includes('pdf') ? 'pdf' : file.type.includes('audio') ? 'audio' : 'text';
+          const fileType = 'pdf';
           const sourceData = {
             notebookId,
             title: file.name,
@@ -406,12 +431,8 @@ const AddSourcesDialog = ({
           <DialogHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-black rounded flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#FFFFFF">
-                    <path d="M480-80q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-200v-80h320v80H320Zm10-120q-69-41-109.5-110T180-580q0-125 87.5-212.5T480-880q125 0 212.5 87.5T780-580q0 81-40.5 150T630-320H330Zm24-80h252q45-32 69.5-79T700-580q0-92-64-156t-156-64q-92 0-156 64t-64 156q0 54 24.5 101t69.5 79Zm126 0Z" />
-                  </svg>
-                </div>
-                <DialogTitle className="text-xl font-medium">InsightsLM</DialogTitle>
+                <Logo size="sm" />
+                <DialogTitle className="text-xl font-medium">AskCal Insights</DialogTitle>
               </div>
             </div>
           </DialogHeader>
@@ -419,7 +440,7 @@ const AddSourcesDialog = ({
           <div className="space-y-6">
             <div>
               <h2 className="text-xl font-medium mb-2">Add sources</h2>
-              <p className="text-gray-600 text-sm mb-1">Sources let InsightsLM base its responses on the information that matters most to you.</p>
+              <p className="text-gray-600 text-sm mb-1">Sources let AskCal Insights base its responses on the information that matters most to you.</p>
               <p className="text-gray-500 text-xs">
                 (Examples: marketing plans, course reading, research notes, meeting transcripts, sales documents, etc.)
               </p>
@@ -462,14 +483,14 @@ const AddSourcesDialog = ({
                   </p>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Supported file types: PDF, txt, Markdown, Audio (e.g. mp3)
+                  Supported file types: PDF only
                 </p>
                 <input
                   id="file-upload"
                   type="file"
                   multiple
                   className="hidden"
-                  accept=".pdf,.txt,.md,.mp3,.wav,.m4a"
+                  accept=".pdf,application/pdf"
                   onChange={handleFileSelect}
                   disabled={isProcessingFiles}
                 />

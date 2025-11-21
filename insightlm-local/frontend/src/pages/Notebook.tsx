@@ -16,6 +16,8 @@ const Notebook = () => {
   const { notebooks } = useNotebooks();
   const { sources } = useSources(notebookId);
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null);
+  const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
+  const [isStudioCollapsed, setIsStudioCollapsed] = useState(false);
   const isDesktop = useIsDesktop();
 
   const notebook = notebooks?.find(n => n.id === notebookId);
@@ -30,10 +32,20 @@ const Notebook = () => {
     setSelectedCitation(null);
   };
 
-  // Dynamic width calculations for desktop - expand studio when editing notes
-  const sourcesWidth = isSourceDocumentOpen ? 'w-[35%]' : 'w-[25%]';
-  const studioWidth = 'w-[30%]'; // Expanded width for note editing
-  const chatWidth = isSourceDocumentOpen ? 'w-[35%]' : 'w-[45%]';
+  // Dynamic width calculations for desktop - adjust based on collapsed states
+  const getSourcesWidth = () => {
+    if (isSourcesCollapsed) return 'w-12';
+    if (isSourceDocumentOpen) return 'w-[35%]';
+    return 'w-[25%]';
+  };
+
+  const getStudioWidth = () => {
+    if (isStudioCollapsed) return 'w-12';
+    return 'w-[30%]';
+  };
+
+  const sourcesWidth = getSourcesWidth();
+  const studioWidth = getStudioWidth();
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
@@ -45,29 +57,35 @@ const Notebook = () => {
       {isDesktop ? (
         // Desktop layout (3-column)
         <div className="flex-1 flex overflow-hidden">
-          <div className={`${sourcesWidth} flex-shrink-0`}>
+          <div className={`${sourcesWidth} flex-shrink-0 transition-all duration-300`}>
             <SourcesSidebar 
               hasSource={hasSource || false} 
               notebookId={notebookId}
               selectedCitation={selectedCitation}
               onCitationClose={handleCitationClose}
               setSelectedCitation={setSelectedCitation}
+              isCollapsed={isSourcesCollapsed}
+              onToggleCollapse={() => setIsSourcesCollapsed(!isSourcesCollapsed)}
             />
           </div>
           
-          <div className={`${chatWidth} flex-shrink-0`}>
+          {/* Chat area expands to fill remaining space, especially when both sidebars are collapsed */}
+          <div className="flex-1 transition-all duration-300 min-w-0 overflow-hidden">
             <ChatArea 
               hasSource={hasSource || false} 
               notebookId={notebookId}
               notebook={notebook}
               onCitationClick={handleCitationClick}
+              isBothCollapsed={isSourcesCollapsed && isStudioCollapsed}
             />
           </div>
           
-          <div className={`${studioWidth} flex-shrink-0`}>
+          <div className={`${studioWidth} flex-shrink-0 transition-all duration-300`}>
             <StudioSidebar 
               notebookId={notebookId} 
               onCitationClick={handleCitationClick}
+              isCollapsed={isStudioCollapsed}
+              onToggleCollapse={() => setIsStudioCollapsed(!isStudioCollapsed)}
             />
           </div>
         </div>

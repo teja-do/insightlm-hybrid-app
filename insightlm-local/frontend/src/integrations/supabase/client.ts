@@ -2,8 +2,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Use runtime URL from patch script, fall back to env var, or use default IP
+const SUPABASE_URL = (typeof window !== 'undefined' && (window as any).RUNTIME_SUPABASE_URL) 
+  || import.meta.env.VITE_SUPABASE_URL 
+  || 'http://10.221.44.58:8000';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzYzMzE3ODAwLCJleHAiOjE5MjEwODQyMDB9.9_YU7_4ILOuj06O5QcOM3XXjJSEsqgJKvKpZISsXrKM';
+
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

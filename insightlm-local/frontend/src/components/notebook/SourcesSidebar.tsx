@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, Trash2, Edit, Loader2, CheckCircle, XCircle, Upload } from 'lucide-react';
+import { Plus, MoreVertical, Trash2, Edit, Loader2, CheckCircle, XCircle, Upload, ChevronRight, ChevronLeft, FileText,PanelRightClose,PanelLeftClose,PanelLeftOpen } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
@@ -19,6 +19,8 @@ interface SourcesSidebarProps {
   selectedCitation?: Citation | null;
   onCitationClose?: () => void;
   setSelectedCitation?: (citation: Citation | null) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const SourcesSidebar = ({
@@ -26,7 +28,9 @@ const SourcesSidebar = ({
   notebookId,
   selectedCitation,
   onCitationClose,
-  setSelectedCitation
+  setSelectedCitation,
+  isCollapsed = false,
+  onToggleCollapse
 }: SourcesSidebarProps) => {
   const [showAddSourcesDialog, setShowAddSourcesDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -205,11 +209,24 @@ const SourcesSidebar = ({
             <h2 className="text-lg font-medium text-gray-900 cursor-pointer hover:text-gray-700" onClick={handleBackToSources}>
               Sources
             </h2>
-            <Button variant="ghost" onClick={handleBackToSources} className="p-2 [&_svg]:!w-6 [&_svg]:!h-6">
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                <path d="M440-440v240h-80v-160H200v-80h240Zm160-320v160h160v80H520v-240h80Z" />
-              </svg>
-            </Button>
+            <div className="flex items-center space-x-2">
+              {onToggleCollapse && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-8 h-8 p-0"
+                  onClick={onToggleCollapse}
+                  title="Collapse Sources"
+                >
+                  <PanelLeftClose className="h-5 w-5" />
+                </Button>
+              )}
+              <Button variant="ghost" onClick={handleBackToSources} className="p-2 [&_svg]:!w-6 [&_svg]:!h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                  <path d="M440-440v240h-80v-160H200v-80h240Zm160-320v160h160v80H520v-240h80Z" />
+                </svg>
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -225,11 +242,58 @@ const SourcesSidebar = ({
     );
   }
 
+  // Collapsed view
+  if (isCollapsed) {
+    return (
+      <div className="w-full bg-gray-50 border-r border-gray-200 flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col items-center py-3 space-y-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0 rounded-md hover:bg-gray-200"
+            onClick={onToggleCollapse}
+            title="Expand Sources"
+          >
+            <PanelLeftOpen className="h-5 w-5 text-gray-600" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0 rounded-md hover:bg-gray-200"
+            onClick={() => setShowAddSourcesDialog(true)}
+            title="Add Source"
+          >
+            <Plus className="h-5 w-5 text-gray-600" />
+          </Button>
+          <div className="w-10 h-10 flex items-center justify-center">
+            <FileText className="h-5 w-5 text-gray-400" />
+          </div>
+        </div>
+        <AddSourcesDialog 
+          open={showAddSourcesDialog} 
+          onOpenChange={setShowAddSourcesDialog} 
+          notebookId={notebookId} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full bg-gray-50 border-r border-gray-200 flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium text-gray-900">Sources</h2>
+          {onToggleCollapse && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-8 h-8 p-0"
+              onClick={onToggleCollapse}
+              title="Collapse Sources"
+            >
+              <PanelLeftClose className="h-5 w-5" />
+            </Button>
+          )}
         </div>
         
         <div className="flex space-x-2">

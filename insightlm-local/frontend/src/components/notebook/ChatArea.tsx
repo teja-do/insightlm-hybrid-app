@@ -24,13 +24,15 @@ interface ChatAreaProps {
     example_questions?: string[];
   } | null;
   onCitationClick?: (citation: Citation) => void;
+  isBothCollapsed?: boolean;
 }
 
 const ChatArea = ({
   hasSource,
   notebookId,
   notebook,
-  onCitationClick
+  onCitationClick,
+  isBothCollapsed = false
 }: ChatAreaProps) => {
   const [message, setMessage] = useState('');
   const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
@@ -170,7 +172,7 @@ const ChatArea = ({
       {hasSource ? <div className="flex-1 flex flex-col h-full overflow-hidden">
           {/* Chat Header */}
           <div className="p-4 border-b border-gray-200 flex-shrink-0">
-            <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className={`${isBothCollapsed ? 'w-full px-8' : 'max-w-4xl mx-auto'} flex items-center justify-between`}>
               <h2 className="text-lg font-medium text-gray-900">Chat</h2>
               {shouldShowRefreshButton && <Button variant="ghost" size="sm" onClick={handleRefreshChat} disabled={isDeletingChatHistory || isChatDisabled} className="flex items-center space-x-2">
                   <RefreshCw className={`h-4 w-4 ${isDeletingChatHistory ? 'animate-spin' : ''}`} />
@@ -182,7 +184,7 @@ const ChatArea = ({
           <ScrollArea className="flex-1 h-full" ref={scrollAreaRef}>
             {/* Document Summary */}
             <div className="p-8 border-b border-gray-200">
-              <div className="max-w-4xl mx-auto">
+              <div className={isBothCollapsed ? 'w-full px-8' : 'max-w-4xl mx-auto'}>
                 <div className="flex items-center space-x-4 mb-6">
                   <div className="w-10 h-10 flex items-center justify-center bg-transparent">
                     {isGenerating ? <Loader2 className="text-black font-normal w-10 h-10 animate-spin" /> : <span className="text-[40px] leading-none">{notebook?.icon || '☕'}</span>}
@@ -244,7 +246,7 @@ const ChatArea = ({
 
           {/* Chat Input - Fixed at bottom */}
           <div className="p-6 border-t border-gray-200 flex-shrink-0">
-            <div className="max-w-4xl mx-auto">
+            <div className={isBothCollapsed ? 'w-full px-8' : 'max-w-4xl mx-auto'}>
               <div className="flex space-x-4">
                 <div className="flex-1 relative">
                   <Input placeholder={getPlaceholderText()} value={message} onChange={e => setMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && !isChatDisabled && !isSending && !pendingUserMessage && handleSendMessage()} className="pr-12" disabled={isChatDisabled || isSending || !!pendingUserMessage} />
@@ -259,7 +261,7 @@ const ChatArea = ({
               
               {/* Example Questions Carousel */}
               {!isChatDisabled && !pendingUserMessage && !showAiLoading && exampleQuestions.length > 0 && <div className="mt-4">
-                  <Carousel className="w-full max-w-4xl">
+                  <Carousel className={`w-full ${isBothCollapsed ? '' : 'max-w-4xl'}`}>
                     <CarouselContent className="-ml-2 md:-ml-4">
                       {exampleQuestions.map((question, index) => <CarouselItem key={index} className="pl-2 md:pl-4 basis-auto">
                           <Button variant="outline" size="sm" className="text-left whitespace-nowrap h-auto py-2 px-3 text-sm" onClick={() => handleExampleQuestionClick(question)}>
@@ -290,7 +292,7 @@ const ChatArea = ({
           </div>
 
           {/* Bottom Input */}
-          <div className="w-full max-w-2xl">
+          <div className={`w-full ${isBothCollapsed ? 'px-8' : 'max-w-2xl mx-auto'}`}>
             <div className="flex space-x-4">
               <Input placeholder="Upload a source to get started" disabled className="flex-1" />
               <div className="flex items-center text-sm text-gray-500">
@@ -305,7 +307,7 @@ const ChatArea = ({
       
       {/* Footer */}
       <div className="p-4 border-t border-gray-200 flex-shrink-0">
-        <p className="text-center text-sm text-gray-500">InsightsLM can be inaccurate; please double-check its responses.</p>
+        <p className="text-center text-sm text-gray-500">AskCal Insights can be inaccurate; please double-check its responses.</p>
       </div>
       
       {/* Add Sources Dialog */}

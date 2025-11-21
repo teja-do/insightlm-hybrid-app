@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MoreVertical, Plus, Edit, Bot, User, Loader2, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { MoreVertical, Plus, Edit, Bot, User, Loader2, AlertCircle, CheckCircle2, RefreshCw, ChevronLeft, ChevronRight, NotebookPen,PanelRightClose,PanelLeftClose,PanelRightOpen, PanelLeftOpen } from 'lucide-react';
 import { useNotes, Note } from '@/hooks/useNotes';
 import { useAudioOverview } from '@/hooks/useAudioOverview';
 import { useNotebooks } from '@/hooks/useNotebooks';
@@ -16,12 +16,16 @@ interface StudioSidebarProps {
   notebookId?: string;
   isExpanded?: boolean;
   onCitationClick?: (citation: Citation) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const StudioSidebar = ({
   notebookId,
   isExpanded,
-  onCitationClick
+  onCitationClick,
+  isCollapsed = false,
+  onToggleCollapse
 }: StudioSidebarProps) => {
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isCreatingNote, setIsCreatingNote] = useState(false);
@@ -215,9 +219,53 @@ const StudioSidebar = ({
       </div>;
   }
 
+  // Collapsed view
+  if (isCollapsed) {
+    return (
+      <div className="w-full bg-gray-50 border-l border-gray-200 flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col items-center py-3 space-y-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0 rounded-md hover:bg-gray-200"
+            onClick={onToggleCollapse}
+            title="Expand Studio"
+          >
+            <PanelRightOpen className="h-5 w-5 text-gray-600" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0 rounded-md hover:bg-gray-200"
+            onClick={handleCreateNote}
+            title="Add Note"
+          >
+            <Plus className="h-5 w-5 text-gray-600" />
+          </Button>
+          <div className="w-10 h-10 flex items-center justify-center">
+            <NotebookPen className="h-5 w-5 text-gray-400" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="w-full bg-gray-50 border-l border-gray-200 flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Studio</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium text-gray-900">Studio</h2>
+          {onToggleCollapse && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-8 h-8 p-0"
+              onClick={onToggleCollapse}
+              title="Collapse Studio"
+            >
+              <PanelRightClose className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
         
         {/* Audio Overview */}
         <Card className="p-4 mb-4 border border-gray-200">
@@ -270,7 +318,7 @@ const StudioSidebar = ({
                 </div>}
               
               <div className="flex space-x-2">
-                <Button size="sm" onClick={handleGenerateAudio} disabled={isGenerating || currentStatus === 'generating' || !hasProcessedSource || isAutoRefreshing} className="flex-1 text-white bg-slate-900 hover:bg-slate-800">
+                <Button size="sm" onClick={handleGenerateAudio} disabled={isGenerating || currentStatus === 'generating' || !hasProcessedSource || isAutoRefreshing} className="flex-1 text-white bg-blue-600 hover:bg-blue-700">
                   {isGenerating || currentStatus === 'generating' ? <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Generating...
